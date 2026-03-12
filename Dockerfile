@@ -6,7 +6,7 @@ WORKDIR /app
 # Copy package files and install ALL deps (including dev for build)
 COPY package*.json ./
 COPY prisma ./prisma/
-RUN npm ci
+RUN npm install
 
 # Generate Prisma client
 RUN npx prisma generate
@@ -26,7 +26,7 @@ WORKDIR /app
 
 # Copy only production dependencies
 COPY package*.json ./
-RUN npm ci --omit=dev && npm cache clean --force
+RUN npm install --omit=dev && npm cache clean --force
 
 # Copy built artifacts and Prisma client
 COPY --from=builder /app/dist ./dist
