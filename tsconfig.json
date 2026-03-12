@@ -1,0 +1,52 @@
+{
+    "compilerOptions": {
+        "target": "ES2021",
+        "module": "CommonJS",
+        "lib": [
+            "ES2021"
+        ],
+        "outDir": "./dist",
+        "rootDir": "./src",
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "resolveJsonModule": true,
+        "declaration": true,
+        "declarationMap": true,
+        "sourceMap": true,
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "baseUrl": ".",
+        "paths": {
+            "@config/*": [
+                "src/config/*"
+            ],
+            "@middleware/*": [
+                "src/middleware/*"
+            ],
+            "@controllers/*": [
+                "src/controllers/*"
+            ],
+            "@services/*": [
+                "src/services/*"
+            ],
+            "@routes/*": [
+                "src/routes/*"
+            ],
+            "@utils/*": [
+                "src/utils/*"
+            ],
+            "@prisma-client": [
+                "src/prisma/client"
+            ]
+        }
+    },
+    "include": [
+        "src/**/*"
+    ],
+    "exclude": [
+        "node_modules",
+        "dist"
+    ]
+}

@@ -1,0 +1,525 @@
+openapi: 3.0.0
+info:
+  title: GDG Subscription API
+  description: A production-ready API for subscription-based content delivery.
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000/api
+    description: Local development server
+  - url: https://api.example.com
+    description: Production server
+
+paths:
+  /auth/register:
+    post:
+      summary: Register a new user
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+                - name
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+                password:
+                  type: string
+                  format: password
+                  example: StrongP@ssw0rd!
+                name:
+                  type: string
+                  example: John Doe
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: Validation error or email already in use
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/login:
+    post:
+      summary: Login user
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+                password:
+                  type: string
+                  format: password
+                  example: StrongP@ssw0rd!
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/refresh:
+    post:
+      summary: Refresh access token
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - refreshToken
+              properties:
+                refreshToken:
+                  type: string
+                  example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+      responses:
+        '200':
+          description: Token refreshed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Invalid or expired refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /content/free:
+    get:
+      summary: Get free content
+      tags:
+        - Content
+      responses:
+        '200':
+          description: Free content retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentResponse'
+  
+  /content/premium:
+    get:
+      summary: Get premium content
+      tags:
+        - Content
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Premium content retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentResponse'
+        '401':
+          description: Unauthorized - Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden - Requires premium subscription
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /subscription/upgrade:
+    post:
+      summary: Upgrade user subscription to premium
+      tags:
+        - Subscription
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - planId
+              properties:
+                planId:
+                  type: string
+                  example: premium_monthly
+      responses:
+        '200':
+          description: Subscription upgraded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionStatusResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /subscription/status:
+    get:
+      summary: Get current subscription status
+      tags:
+        - Subscription
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Subscription status retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionStatusResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /admin/logs:
+    get:
+      summary: Get system logs
+      tags:
+        - Admin
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 100
+          description: Number of logs to return
+      responses:
+        '200':
+          description: Logs retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogsResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden - Requires admin role
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /admin/report/csv:
+    get:
+      summary: Export system report as CSV
+      tags:
+        - Admin
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: CSV report generated
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden - Requires admin role
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /admin/users:
+    get:
+      summary: Get list of users
+      tags:
+        - Admin
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Users retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsersListResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden - Requires admin role
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /health:
+    get:
+      summary: API health check
+      tags:
+        - System
+      responses:
+        '200':
+          description: System is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        data:
+          type: object
+          nullable: true
+          example: null
+        message:
+          type: string
+          example: "An error occurred"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2023-10-25T12:00:00Z"
+
+    AuthResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            user:
+              type: object
+              properties:
+                id:
+                  type: string
+                  example: "uuid-1234-5678"
+                email:
+                  type: string
+                  example: "user@example.com"
+                role:
+                  type: string
+                  example: "USER"
+                tier:
+                  type: string
+                  example: "FREE"
+            accessToken:
+              type: string
+              example: "eyJhbGciOiJIUzI1NiIs..."
+            refreshToken:
+              type: string
+              example: "eyJhbGciOiJIUzI1NiIs..."
+        message:
+          type: string
+          example: "Authentication successful"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2023-10-25T12:00:00Z"
+          
+    ContentResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            contentId:
+              type: string
+              example: "content-123"
+            title:
+              type: string
+              example: "Introduction to API Design"
+            body:
+              type: string
+              example: "Here is the content body..."
+        message:
+          type: string
+          example: "Content retrieved successfully"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2023-10-25T12:00:00Z"
+
+    SubscriptionStatusResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            userId:
+              type: string
+              example: "uuid-1234-5678"
+            tier:
+              type: string
+              example: "PREMIUM"
+            validUntil:
+              type: string
+              format: date-time
+              example: "2023-11-25T12:00:00Z"
+        message:
+          type: string
+          example: "Subscription status retrieved"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2023-10-25T12:00:00Z"
+
+    LogsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                example: "log-123"
+              level:
+                type: string
+                example: "INFO"
+              message:
+                type: string
+                example: "User logged in"
+              createdAt:
+                type: string
+                format: date-time
+                example: "2023-10-25T12:00:00Z"
+        message:
+          type: string
+          example: "Logs retrieved successfully"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2023-10-25T12:00:00Z"
+
+    UsersListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                example: "uuid-1234"
+              email:
+                type: string
+                example: "user@example.com"
+              name:
+                type: string
+                example: "John Doe"
+              role:
+                type: string
+                example: "USER"
+              tier:
+                type: string
+                example: "PREMIUM"
+        message:
+          type: string
+          example: "Users retrieved successfully"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2023-10-25T12:00:00Z"
+
+    HealthResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            status:
+              type: string
+              example: "UP"
+            db:
+              type: string
+              example: "CONNECTED"
+            uptime:
+              type: number
+              example: 3600
+        message:
+          type: string
+          example: "API is healthy"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2023-10-25T12:00:00Z"
