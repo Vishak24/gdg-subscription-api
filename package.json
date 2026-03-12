@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "tsup src/server.ts --format cjs --out-dir dist --dts",
-    "start": "npx prisma migrate deploy && npx prisma db seed && node dist/server.js",
+    "start": "npx prisma db push --accept-data-loss && npx prisma db seed && node dist/server.js",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:migrate:prod": "prisma migrate deploy",
