@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GDG Admin Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Product+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0D1117;
+            --card-bg: rgba(22, 27, 34, 0.7);
+            --accent-color: #4285F4;
+            --text-primary: #f0f6fc;
+            --text-secondary: #8b949e;
+            --border-color: rgba(48, 54, 61, 0.5);
+            --glass-blur: 12px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Product Sans', 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* Glassmorphism utility */
+        .glass {
+            background: var(--card-bg);
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        header {
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(13, 17, 23, 0.8);
+            backdrop-filter: blur(10px);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            letter-spacing: -0.5px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            flex-grow: 1;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .stat-card {
+            padding: 1.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card h3 {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        /* Login Overlay */
+        #login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(13, 17, 23, 0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 400px;
+            padding: 2.5rem;
+            text-align: center;
+        }
+
+        .login-card h2 {
+            margin-bottom: 2rem;
+            font-size: 1.75rem;
+        }
+
+        .input-group {
+            text-align: left;
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            padding: 0.75rem 1rem;
+            color: white;
+            border-radius: 8px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            border-color: var(--accent-color);
+        }
+
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        /* Main Content */
+        .content-section {
+            margin-bottom: 2.5rem;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        h2 {
+            font-size: 1.25rem;
+            color: var(--text-primary);
+        }
+
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            padding: 1rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+            font-size: 0.875rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.95rem;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .badge {
+            padding: 0.25rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge-premium { background: rgba(66, 133, 244, 0.2); color: #4285F4; }
+        .badge-free { background: rgba(139, 148, 158, 0.2); color: #8b949e; }
+        .badge-success { background: rgba(46, 160, 67, 0.2); color: #3fb950; }
+        .badge-error { background: rgba(248, 81, 73, 0.2); color: #f85149; }
+
+        .hidden { display: none !important; }
+
+        .btn-small {
+            width: auto;
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+        }
+
+        #logout-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        #logout-btn:hover {
+            border-color: var(--f85149);
+            color: #f85149;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="login-overlay">
+        <div class="login-card glass">
+            <div class="logo" style="margin-bottom: 1.5rem;">GDG ADMIN</div>
+            <h2>Sign In</h2>
+            <form id="login-form">
+                <div class="input-group">
+                    <label>Email Address</label>
+                    <input type="email" id="email" required placeholder="admin@example.com">
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="password" required placeholder="••••••••">
+                </div>
+                <button type="submit">Access Dashboard</button>
+            </form>
+            <p id="login-error" style="color: #f85149; margin-top: 1rem; font-size: 0.85rem;" class="hidden"></p>
+        </div>
+    </div>
+
+    <header>
+        <div class="logo">GDG DASHBOARD</div>
+        <div style="display: flex; gap: 1rem;">
+            <button id="download-csv" class="btn-small">Download CSV</button>
+            <button id="logout-btn" class="btn-small">Logout</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-card glass">
+                <h3>Total Users</h3>
+                <div class="value" id="stat-total">--</div>
+            </div>
+            <div class="stat-card glass">
+                <h3>Premium Users</h3>
+                <div class="value" id="stat-premium">--</div>
+            </div>
+            <div class="stat-card glass">
+                <h3>Free Users</h3>
+                <div class="value" id="stat-free">--</div>
+            </div>
+            <div class="stat-card glass">
+                <h3>API Calls</h3>
+                <div class="value" id="stat-api">--</div>
+            </div>
+        </div>
+
+        <section class="content-section">
+            <div class="section-header">
+                <h2>Live Activity Logs</h2>
+                <span id="last-updated" style="font-size: 0.75rem; color: var(--text-secondary);">Last updated: Just now</span>
+            </div>
+            <div class="table-container glass">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Method</th>
+                            <th>Path</th>
+                            <th>Status</th>
+                            <th>IP</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logs-table-body">
+                        <!-- Logs will be injected here -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="section-header">
+                <h2>User Management</h2>
+            </div>
+            <div class="table-container glass">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Email</th>
+                            <th>Tier</th>
+                            <th>Joined</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-table-body">
+                        <!-- Users will be injected here -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        const API_URL = '/api';
+        const STORAGE_KEY = 'gdg_token';
+
+        // Auth Logic
+        const loginForm = document.getElementById('login-form');
+        const loginOverlay = document.getElementById('login-overlay');
+        const loginError = document.getElementById('login-error');
+
+        function checkAuth() {
+            const token = localStorage.getItem(STORAGE_KEY);
+            if (token) {
+                loginOverlay.classList.add('hidden');
+                fetchData();
+            } else {
+                loginOverlay.classList.remove('hidden');
+            }
+        }
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    localStorage.setItem(STORAGE_KEY, result.data.accessToken);
+                    loginOverlay.classList.add('hidden');
+                    fetchData();
+                } else {
+                    loginError.textContent = result.message || 'Login failed';
+                    loginError.classList.remove('hidden');
+                }
+            } catch (err) {
+                loginError.textContent = 'Server connection error';
+                loginError.classList.remove('hidden');
+            }
+        });
+
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            localStorage.removeItem(STORAGE_KEY);
+            location.reload();
+        });
+
+        // Data Fetching
+        async function fetchWithAuth(url, options = {}) {
+            const token = localStorage.getItem(STORAGE_KEY);
+            const headers = {
+                ...options.headers,
+                'Authorization': `Bearer ${token}`
+            };
+
+            const response = await fetch(url, { ...options, headers });
+            
+            if (response.status === 401) {
+                localStorage.removeItem(STORAGE_KEY);
+                location.reload();
+                return null;
+            }
+            
+            return response;
+        }
+
+        async function fetchData() {
+            try {
+                // Fetch Stats & Logs
+                const logRes = await fetchWithAuth(`${API_URL}/admin/logs`);
+                if (!logRes) return;
+                const logData = await logRes.json();
+
+                if (logData.success) {
+                    updateStats(logData.data.summary);
+                    updateLogsTable(logData.data.logs);
+                }
+
+                // Fetch Users
+                const userRes = await fetchWithAuth(`${API_URL}/admin/users`);
+                if (userRes) {
+                    const userData = await userRes.json();
+                    if (userData.success) {
+                        updateUsersTable(userData.data.users);
+                    }
+                }
+
+                document.getElementById('last-updated').textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
+            } catch (err) {
+                console.error('Fetch error:', err);
+            }
+        }
+
+        function updateStats(summary) {
+            if (!summary) return;
+            document.getElementById('stat-total').textContent = summary.totalUsers || 0;
+            document.getElementById('stat-premium').textContent = summary.premiumUsers || 0;
+            document.getElementById('stat-free').textContent = summary.freeUsers || 0;
+            document.getElementById('stat-api').textContent = summary.totalRequests || 0;
+        }
+
+        function updateLogsTable(logs) {
+            const body = document.getElementById('logs-table-body');
+            body.innerHTML = '';
+            
+            logs.slice(0, 10).forEach(log => {
+                const tr = document.createElement('tr');
+                const statusClass = log.statusCode < 400 ? 'badge-success' : 'badge-error';
+                tr.innerHTML = `
+                    <td>${new Date(log.timestamp).toLocaleTimeString()}</td>
+                    <td style="font-weight: 700;">${log.method}</td>
+                    <td style="color: var(--text-secondary); font-family: monospace;">${log.path}</td>
+                    <td><span class="badge ${statusClass}">${log.statusCode}</span></td>
+                    <td style="color: var(--text-secondary);">${log.ip}</td>
+                `;
+                body.appendChild(tr);
+            });
+        }
+
+        function updateUsersTable(users) {
+            const body = document.getElementById('users-table-body');
+            body.innerHTML = '';
+
+            users.forEach(user => {
+                const tr = document.createElement('tr');
+                const tier = user.subscription?.tier || 'FREE';
+                const badgeClass = tier === 'PREMIUM' ? 'badge-premium' : 'badge-free';
+                
+                tr.innerHTML = `
+                    <td style="font-weight: 700;">${user.name}</td>
+                    <td style="color: var(--text-secondary);">${user.email}</td>
+                    <td><span class="badge ${badgeClass}">${tier}</span></td>
+                    <td style="color: var(--text-secondary);">${new Date(user.createdAt).toLocaleDateString()}</td>
+                `;
+                body.appendChild(tr);
+            });
+        }
+
+        // CSV Download
+        document.getElementById('download-csv').addEventListener('click', async () => {
+            const token = localStorage.getItem(STORAGE_KEY);
+            window.open(`${API_URL}/admin/report/csv?token=${token}`, '_blank');
+        });
+
+        // Initialize and Refresh
+        checkAuth();
+        setInterval(fetchData, 10000);
+
+    </script>
+</body>
+</html>

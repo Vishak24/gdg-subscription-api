@@ -63,6 +63,14 @@ app.use('/api/content', contentRoutes);
 app.use('/api/activity', activityRoutes);
 app.use('/api/admin', adminRoutes);
 
+// ── Dashboard / Frontend ──────────────────────────────────────────────────
+import path from 'path';
+app.use(express.static(path.join(__dirname, '../public')));
+
+app.get('/dashboard', (_req, res) => {
+    res.sendFile(path.join(__dirname, '../public/dashboard.html'));
+});
+
 // ── Swagger UI (disable in production if desired) ─────────────────────────
 app.use(
     '/api/docs',
